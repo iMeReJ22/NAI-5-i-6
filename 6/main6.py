@@ -1,11 +1,55 @@
+import random
+
+
+def get_distance(path, table):
+    distance = 0
+    for i in range(len(path) - 1):
+        distance += table[path[i]][path[i + 1]]
+    distance += table[path[len(path)-1]][path[0]]
+    return distance
+
+
+def swap(to_visit, i1, i2):
+    tmp = to_visit[i1]
+    to_visit[i1] = to_visit[i2]
+    to_visit[i2] = tmp
+
+
+def get_neighbours(path):
+    neighbours = list()
+    for i in range(1, len(path)):
+        for j in range(1, i):
+            neighbour = path.copy()
+            swap(neighbour, i, j)
+            neighbours.append(neighbour)
+    return neighbours
+
+
+def get_smallest_path(path, table):
+    smallest = -1
+    smallest_distance = get_distance(path, table)
+    neighbours = get_neighbours(path)
+    for i in range(len(neighbours)):
+        current_distance = get_distance(neighbours[i], table)
+        if current_distance < smallest_distance:
+            smallest_distance = current_distance
+            smallest = i
+            path = neighbours[i]
+    if smallest == -1:
+        return path, smallest_distance
+    else:
+        print(f"Moving to \t\t{path}, with distance: \t{smallest_distance}")
+        return get_smallest_path(path, table)
+
+
 def main():
     file = open("komiwojazer.txt")
 
     n = int(file.readline())
 
     table = [[0] * n for i in range(n)]
-    visited = []
-    to_visit = [i for i in range(n)]
+    path = [i for i in range(n)]
+    random.shuffle(path)
 
     for line in file:
         parts = line.split(" ")
@@ -15,24 +59,11 @@ def main():
         table[v1][v2] = d
         table[v2][v1] = d
 
-    distance = 0
-    current_node = 0
-    visited = [to_visit.pop(to_visit.index(current_node))]
+    print(f"Starting at \t{path}, with distance: \t{get_distance(path, table)}")
+    path, distance = get_smallest_path(path, table)
+    print(f"Ended with \t\t{path}, with distance: \t{distance}")
 
-    while len(to_visit) != 0:
-        min_distance = 999999
-        min_node = -1
-        for node in to_visit:
-            current_distance = distance + table[current_node][node]
-            if current_distance < min_distance:
-                min_distance = current_distance
-                min_node = node
-        print(f"Went from {current_node} to {min_node}\nCurrent distance: {min_distance}")
-        current_node = min_node
-        visited.append(to_visit.pop(to_visit.index(current_node)))
-        distance = min_distance
 
-    print(visited)
-
-main()
+if __name__ == '__main__':
+    main()
 
